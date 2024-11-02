@@ -1,6 +1,9 @@
 import random
+import time
 
 import pgzrun
+
+from pgzhelper import *
 
 WIDTH = 1024
 HEIGHT = 768
@@ -13,6 +16,8 @@ player_lasers = []
 enemy_lasers = []
 
 player.hp = 100
+
+music.play('loading')
 
 
 def update():
@@ -32,18 +37,25 @@ def update():
         player.right = min(WIDTH, player.right)
 
         if random.randint(0, 100) < 5:
-            enemy = Actor("ufoblue")
+            enemy_skin = random.choice(
+                ['ufoblue', 'ufogreen', 'ufored', 'ufoyellow'])
+            enemy = Actor(enemy_skin)
             enemy.top = 25
             enemy.x = random.randint(0, WIDTH)
             enemies.append(enemy)
 
         if keyboard.SPACE:
-            player_laser = Actor("laserred10")
+            sounds.sfx_laser2.play()
+            player_laser = Actor("laserred01 (1)")
             player_laser.pos = player.pos
+            if enemies:
+                player_laser.point_towards(random.choice(enemies))
+            else:
+                player_laser.angle = 90
             player_lasers.append(player_laser)
 
         for l in player_lasers:
-            l.y -= 7
+            l.move_forward(7)
             if l.bottom < 0:
                 player_lasers.remove(l)
             else:
@@ -54,19 +66,27 @@ def update():
                         break
 
         for e in enemies:
-            if random.randint(0, 1000) < 3:
-                enemy_laser = Actor("laserblue09")
+            if random.randint(0, 1000) < 7:
+                enemy_laser = Actor("laserblue01 (1)")
                 enemy_laser.pos = e.pos
+                enemy_laser.point_towards(player)
                 enemy_lasers.append(enemy_laser)
+            e.point_towards(player)
+            e.move_forward(3)
 
         for l in enemy_lasers:
-            l.y += 7
+            l.move_forward(7)
             if l.top > HEIGHT:
                 enemy_lasers.remove(l)
             else:
                 if l.colliderect(player):
                     enemy_lasers.remove(l)
                     player.hp -= 1
+                    sounds.sfx_shielddown.play()
+                    if player.hp == 0:
+                        time.sleep(1)
+                        sounds.sfx_lose.play()
+                        music.stop()
 
         # print(len(player_lasers))
 
