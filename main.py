@@ -73,6 +73,14 @@ def update():
                 enemy_lasers.append(enemy_laser)
             e.point_towards(player)
             e.move_forward(3)
+            if e.collide_pixel(player):
+                player.hp -= 2
+                enemies.remove(e)
+                sounds.sfx_shieldup.play()
+                if player.hp == 0:
+                    time.sleep(1)
+                    sounds.sfx_lose.play()
+                    music.stop()
 
         for l in enemy_lasers:
             l.move_forward(7)
@@ -92,17 +100,22 @@ def update():
 
 
 def draw():
-    screen.clear()
-    player.draw()
-    for e in enemies:
-        e.draw()
-    for l in player_lasers:
-        l.draw()
-    for l in enemy_lasers:
-        l.draw()
-    screen.draw.filled_rect(Rect(0, 0, WIDTH, 20), "red")
-    screen.draw.filled_rect(Rect(0, 0, WIDTH * player.hp/100, 20), "green")
-    screen.draw.text(f"{player.hp} / 100", center=(WIDTH/2, 10), color='black')
+    if player.hp > 0:
+        screen.clear()
+        player.draw()
+        for e in enemies:
+            e.draw()
+        for l in player_lasers:
+            l.draw()
+        for l in enemy_lasers:
+            l.draw()
+        screen.draw.filled_rect(Rect(0, 0, WIDTH, 20), "red")
+        screen.draw.filled_rect(Rect(0, 0, WIDTH * player.hp/100, 20), "green")
+        screen.draw.text(f"{player.hp} / 100",
+                         center=(WIDTH/2, 10), color='black')
+    else:
+        screen.clear()
+        screen.draw.text("Game Over", center=(WIDTH/2, HEIGHT/2), fontsize=200)
 
 
 pgzrun.go()
